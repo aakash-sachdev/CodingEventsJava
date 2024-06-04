@@ -1,21 +1,18 @@
 package org.launchcode.codingevents.controllers;
 
+import jakarta.validation.Valid;
 import org.launchcode.codingevents.data.EventData;
 import org.launchcode.codingevents.models.Event;
+import org.launchcode.codingevents.models.EventType;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.validation.Errors;
 
-import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Chris Bay
- */
+
 @Controller
 @RequestMapping("events")
 public class EventController {
@@ -28,20 +25,28 @@ public class EventController {
     }
 
     @GetMapping("create")
-    public String renderCreatEventForm(Model model) {
+    public String displayCreateEventForm(Model model) {
         model.addAttribute("title", "Create Event");
+        model.addAttribute(new Event());
+        model.addAttribute("types", EventType.values());
         return "events/create";
     }
 
     @PostMapping("create")
-    public String processCreateEventForm(@RequestParam String eventName, @RequestParam String eventDescription) {
-        EventData.add(new Event(eventName, eventDescription));
+    public String processCreateEventForm(@ModelAttribute @Valid Event newEvent,
+                                         Errors errors, Model model) {
+        if(errors.hasErrors()) {
+            model.addAttribute("title", "Create Event");
+            return "events/create";
+        }
+
+        EventData.add(newEvent);
         return "redirect:/events";
     }
 
     @GetMapping("delete")
-    public String renderDeleteEventForm(Model model) {
-        model.addAttribute("title", "Delete Event");
+    public String displayDeleteEventForm(Model model) {
+        model.addAttribute("title", "Delete Events");
         model.addAttribute("events", EventData.getAll());
         return "events/delete";
     }
@@ -57,6 +62,5 @@ public class EventController {
 
         return "redirect:/events";
     }
-
 
 }
